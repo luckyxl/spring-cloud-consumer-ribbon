@@ -1,12 +1,14 @@
 package com.xl.springclouddemoconsumer.controller;
 
 import com.netflix.hystrix.contrib.javanica.annotation.HystrixCommand;
+import com.netflix.hystrix.contrib.javanica.command.AsyncResult;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
 import org.springframework.web.client.RestTemplate;
 
 import javax.annotation.Resource;
+import java.util.concurrent.Future;
 
 /**
  * @ClassName HelloService
@@ -27,8 +29,21 @@ public class HelloConsumerController {
         return restTemplate.getForObject("http://SPRINGCLOUDDEMOSERVICE/hello/helloworld",String.class);
     }
 
-    public String hystrix(){
+    public String hystrix(Throwable throwable){
+        System.out.println(throwable.getMessage());
+        System.out.println(throwable.fillInStackTrace());
+        System.out.println(throwable.toString());
         return "this message from hystrix";
+    }
+    @GetMapping("/helloWorldFuture")
+    @HystrixCommand(fallbackMethod = "hystrix")
+    public Future<String> helloWorldFuture(){
+        return new AsyncResult<String>() {
+            @Override
+            public String invoke() {
+                return restTemplate.getForObject("http://SPRINGCLOUDDEMOSERVICE/hello/helloworld",String.class);
+            }
+        };
     }
 
 
